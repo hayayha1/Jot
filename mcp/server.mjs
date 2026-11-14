@@ -5,7 +5,7 @@ import { FileStore } from '../shared/store.mjs';
 import { plainText, textToHtml, matchesEntry, hasImage } from '../shared/model.mjs';
 
 const store = new FileStore();
-const server = new McpServer({ name: 'suiji', version: '0.1.0' });
+const server = new McpServer({ name: 'suiji', version: '0.2.1' });
 const respond = value => ({ content: [{ type: 'text', text: JSON.stringify(value, null, 2) }] });
 const noteId = z.string().uuid();
 const expectedRevision = z.number().int().nonnegative().describe('必须使用刚读取的笔记 revision，防止覆盖用户的编辑');

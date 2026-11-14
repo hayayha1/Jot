@@ -1,3 +1,4 @@
+import { syncDocument } from './document-sync.mjs';
 export const GAP_MS = 3 * 60 * 1000;
 export const id = () => globalThis.crypto.randomUUID();
 export const escapeHtml = (text) => String(text).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -15,10 +16,10 @@ export function initialState(now = Date.now()) {
   const welcome = makeNote('开始使用随记', now - 1000);
   welcome.entries = [
     { id: id(), html: '<p>欢迎来到随记。想法先记下来，整理的事可以晚一点。</p>', createdAt: now - 600000, updatedAt: now - 600000, groupId: null },
-    { id: id(), html: '<p>在下方直接输入，Enter 记下一条，Shift + Enter 换行。还没写完也没关系，草稿会自动保存。</p>', createdAt: now - 590000, updatedAt: now - 590000, groupId: null },
+    { id: id(), html: '<p>直接在笔记上写字，Enter 换行。点击已有内容就能继续编辑，所有修改都会自动保存。</p>', createdAt: now - 590000, updatedAt: now - 590000, groupId: null },
     { id: id(), html: '<p>停写超过 3 分钟，下次记录会自动分组。用 Ctrl + G 新建一个有名字的分组，把相关的念头放在一起。</p>', createdAt: now - 300000, updatedAt: now - 300000, groupId: null },
-    { id: id(), html: '<p>图片可以粘贴、拖入，也可以点击下方的图片按钮。粘贴网址会自动变成链接。</p>', createdAt: now - 290000, updatedAt: now - 290000, groupId: null },
-    { id: id(), html: '<p>Ctrl + K 搜索所有笔记，还能单独找图片或链接。点击右上角的连接按钮，可以让 Agent 通过 MCP 帮你整理。</p>', createdAt: now - 280000, updatedAt: now - 280000, groupId: null }
+    { id: id(), html: '<p>图片可以粘贴、拖入，也可以点击上方工具栏的图片按钮。Ctrl + G 会直接插入一个命名分组。</p>', createdAt: now - 290000, updatedAt: now - 290000, groupId: null },
+    { id: id(), html: '<p>Ctrl + F 在当前笔记内查找，Enter 跳到下一处。点击查找框，可以筛选图片或超链接。Ctrl + K 搜索所有笔记。</p>', createdAt: now - 280000, updatedAt: now - 280000, groupId: null }
   ];
   const daily = makeNote('日常随记', now);
   return { schemaVersion: 1, revision: 0, notes: [daily, welcome] };
@@ -72,6 +73,7 @@ export function applyCommand(state, command, now = Date.now()) {
   if (command.expectedRevision !== undefined && command.expectedRevision !== note.revision) throw new Error('笔记已被更新，请重新读取后再整理。原始内容已保留。');
   let result = {};
   switch (type) {
+    case 'sync_document': syncDocument(note, command, now); break;
     case 'rename_note': note.title = requireString(command.title, '标题', 200).trim() || '未命名笔记'; break;
     case 'pin_note': note.pinned = !!command.pinned; break;
     case 'archive_note': note.archived = !!command.archived; break;

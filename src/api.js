@@ -19,7 +19,7 @@ const web = {
     queue = work.catch(() => {});
     return work;
   },
-  async info() { return { desktop: false, version: '0.1.0', dataDir: '当前浏览器的本地存储' }; },
+  async info() { return { desktop: false, version: '0.2.1', dataDir: '当前浏览器的本地存储' }; },
   async copy(text) { await navigator.clipboard.writeText(text); },
   async openLink(raw) { const url = new URL(raw); if (['https:', 'http:', 'mailto:'].includes(url.protocol)) window.open(url.href, '_blank', 'noopener,noreferrer'); },
   async export({ title, content }) {

@@ -1,6 +1,6 @@
 {
   "name": "suiji",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "随记 · 轻一点，随时记",
   "private": true,
   "type": "module",
@@ -13,8 +13,9 @@
     "build": "vite build",
     "start": "electron .",
     "test": "node --test tests/*.test.mjs",
-    "test:ui": "node scripts/test-ui.mjs",
+    "test:ui": "node scripts/test-ui.mjs && node scripts/test-regressions.mjs",
     "test:release": "node scripts/test-release.mjs",
+    "test:dev": "node scripts/test-dev.mjs",
     "dist": "npm run build && node scripts/prepare-desktop.mjs && electron-builder --win nsis --x64",
     "pack": "npm run build && node scripts/prepare-desktop.mjs && electron-builder --win --dir",
     "mcp": "node mcp/server.mjs"
