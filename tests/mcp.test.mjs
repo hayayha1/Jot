@@ -1,0 +1,25 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import os from 'node:os';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { FileStore } from '../shared/store.mjs';
+test('真实 MCP 协议：连接、创建、搜索、分组以及版本冲突',async t=>{
+  const dir=await fs.mkdtemp(path.join(os.tmpdir(),'suiji-mcp-'));
+  const client=new Client({name:'suiji-test',version:'1.0'});
+  const transport=new StdioClientTransport({command:process.execPath,args:[path.resolve('mcp/server.mjs')],env:{...process.env,SUIJI_DATA_DIR:dir},stderr:'pipe'});
+  t.after(async()=>{await client.close();await fs.rm(dir,{recursive:true,force:true});});
+  await client.connect(transport);
+  const tools=await client.listTools();assert.ok(tools.tools.some(x=>x.name==='move_entries'));
+  const call=async(name,args)=>{const response=await client.callTool({name,arguments:args});if(response.isError)return {error:response.content[0].text};return JSON.parse(response.content[0].text);};
+  const {noteId}=await call('create_note',{title:'Agent 整理测试'});
+  let note=await call('get_note',{noteId});const added=await call('append_entry',{noteId,text:'MCP 测试 https://example.com',expectedRevision:note.revision});
+  const found=await call('search_notes',{query:'MCP 测试',filter:'link'});assert.equal(found[0].noteId,noteId);
+  const group=await call('create_group',{noteId,title:'研究素材',expectedRevision:added.revision});
+  const moved=await call('move_entries',{noteId,entryIds:[added.entryId],groupId:group.groupId,expectedRevision:group.revision});
+  note=await call('get_note',{noteId});assert.equal(note.entries[0].groupId,group.groupId);assert.equal(note.revision,moved.revision);
+  const conflict=await call('rename_note',{noteId,title:'过时写入',expectedRevision:0});assert.match(conflict.error,/已被更新/);
+  const state=await new FileStore(dir).read();assert.equal(state.notes.find(n=>n.id===noteId).title,'Agent 整理测试');
+});

@@ -1,0 +1,53 @@
+{
+  "name": "suiji",
+  "version": "0.1.0",
+  "description": "随记 · 轻一点，随时记",
+  "private": true,
+  "type": "module",
+  "main": "electron/main.cjs",
+  "author": "随记",
+  "license": "MIT",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:web": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "start": "electron .",
+    "test": "node --test tests/*.test.mjs",
+    "test:ui": "node scripts/test-ui.mjs",
+    "test:release": "node scripts/test-release.mjs",
+    "dist": "npm run build && node scripts/prepare-desktop.mjs && electron-builder --win nsis --x64",
+    "pack": "npm run build && node scripts/prepare-desktop.mjs && electron-builder --win --dir",
+    "mcp": "node mcp/server.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "@tiptap/react": "^3.0.0",
+    "@tiptap/pm": "^3.0.0",
+    "@tiptap/starter-kit": "^3.0.0",
+    "@tiptap/extension-image": "^3.0.0",
+    "@tiptap/extension-placeholder": "^3.0.0",
+    "dompurify": "^3.2.0",
+    "lucide-react": "^0.468.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.0.0",
+    "electron": "^43.0.0",
+    "electron-builder": "^26.0.0",
+    "esbuild": "^0.28.2",
+    "playwright": "^1.56.0",
+    "vite": "^7.0.0"
+  },
+  "overrides": { "minimatch": "^11.0.1" },
+  "build": {
+    "appId": "app.suiji.notes",
+    "productName": "随记",
+    "asar": true,
+    "directories": { "output": "release", "app": ".desktop" },
+    "files": ["**/*", "!**/node_modules/**/*"],
+    "win": { "target": "nsis", "icon": "assets/icon.ico", "artifactName": "Suiji-Setup-${version}.${ext}" },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true, "shortcutName": "随记", "installerLanguages": ["zh_CN"], "language": "2052" }
+  }
+}
